@@ -4,7 +4,7 @@ const { mongoose } = require("mongoose");
 const { ObjectId } = require("mongodb");
 
 const formidable = require("formidable");
-const fs = require("fs");
+const fs = require("node:fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 
