@@ -5,7 +5,8 @@ const { ObjectId } = require("mongodb");
 const express = require("express");
 
 const formidable = require("formidable");
-const fs = require("node:fs");
+// const fs = require("node:fs");
+import * as fs from "node:fs";
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 
