@@ -5,7 +5,7 @@ const { ObjectId } = require("mongodb");
 const express = require("express");
 
 const formidable = require("formidable");
-const fs = require("node:fs/promises");
+// const fs = require("node:fs/promises");
 //import * as fs from "node:fs";
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
@@ -77,63 +77,63 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-router.post("", async (req, res) => {
-  const form = new formidable.IncomingForm();
-  const uploadDir = path.join(__dirname, "public/uploads");
+// router.post("", async (req, res) => {
+//   const form = new formidable.IncomingForm();
+//   const uploadDir = path.join(__dirname, "public/uploads");
 
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
+//   if (!fs.existsSync(uploadDir)) {
+//     fs.mkdirSync(uploadDir, { recursive: true });
+//   }
 
-  form.uploadDir = uploadDir;
-  form.keepExtensions = true;
+//   form.uploadDir = uploadDir;
+//   form.keepExtensions = true;
 
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      return res.status(500).json({ message: "Error parsing form data" });
-    }
+//   form.parse(req, async (err, fields, files) => {
+//     if (err) {
+//       return res.status(500).json({ message: "Error parsing form data" });
+//     }
 
-    // const image = files.image;
-    // const imagePath = image ? image.path : '';
+//     // const image = files.image;
+//     // const imagePath = image ? image.path : '';
 
-    const imagePath = files.imageUrl[0].filepath;
-    const imageName = uuidv4() + path.extname(imagePath);
-    const relativeImagePath = path.join("uploads", imageName);
+//     const imagePath = files.imageUrl[0].filepath;
+//     const imageName = uuidv4() + path.extname(imagePath);
+//     const relativeImagePath = path.join("uploads", imageName);
 
-    const newPath = path.join(uploadDir, imageName);
+//     const newPath = path.join(uploadDir, imageName);
 
-    //Use fs.rename to move the file instead of fs.renameSync
-    fs.rename(imagePath, newPath, (renameError) => {
-      if (renameError) {
-        console.error("Error renaming file:", renameError);
-        return res.status(500).json({ message: "Error saving uploaded image" });
-      }
+//     //Use fs.rename to move the file instead of fs.renameSync
+//     fs.rename(imagePath, newPath, (renameError) => {
+//       if (renameError) {
+//         console.error("Error renaming file:", renameError);
+//         return res.status(500).json({ message: "Error saving uploaded image" });
+//       }
 
-      const productData = new oneProductData({
-        imageUrl: relativeImagePath.replace("\\", "/"),
-        name: fields.name[0],
-        description: fields.description[0],
-        price: parseFloat(fields.price),
-        unitAvailable: parseInt(fields.unitAvailable, 10),
-        features: JSON.parse(fields.features),
-      });
+//       const productData = new oneProductData({
+//         imageUrl: relativeImagePath.replace("\\", "/"),
+//         name: fields.name[0],
+//         description: fields.description[0],
+//         price: parseFloat(fields.price),
+//         unitAvailable: parseInt(fields.unitAvailable, 10),
+//         features: JSON.parse(fields.features),
+//       });
 
-      productData
-        .save()
-        .then(() => {
-          console.log("Product saved successfully");
-          return res
-            .status(200)
-            .json({ message: "Product added successfully" });
-        })
-        .catch((saveError) => {
-          console.error("Error saving product:", saveError);
-          return res
-            .status(500)
-            .json({ message: "Error adding product to the database" });
-        });
-    });
-  });
-});
+//       productData
+//         .save()
+//         .then(() => {
+//           console.log("Product saved successfully");
+//           return res
+//             .status(200)
+//             .json({ message: "Product added successfully" });
+//         })
+//         .catch((saveError) => {
+//           console.error("Error saving product:", saveError);
+//           return res
+//             .status(500)
+//             .json({ message: "Error adding product to the database" });
+//         });
+//     });
+//   });
+// });
 
 module.exports = router;
