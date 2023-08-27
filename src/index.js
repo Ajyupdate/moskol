@@ -39,6 +39,6 @@ app.get("/info", (req, res) => {
 
 app.use("/client", clientRoute);
 app.use("/admin", adminRoute);
-app.use("/service", serviceRoute);
+// app.use("/service", serviceRoute);
 app.use("/reviews", reviewsRoute);
 app.use("/products", productsRoute);
