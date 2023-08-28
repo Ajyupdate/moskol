@@ -5,7 +5,7 @@ const path = require("path");
 const mongoose = require("mongoose");
 
 const { getDb, connectToDb } = require("../src/database/db");
-//const serviceRoute = require("./routes/services");
+const serviceRoute = require("./routes/services");
 const reviewsRoute = require("./routes/reviews");
 //const productsRoute = require("./routes/products");
 const adminRoute = require("./routes/admin");
@@ -39,6 +39,6 @@ app.get("/info", (req, res) => {
 
 app.use("/client", clientRoute);
 app.use("/admin", adminRoute);
-//app.use("/service", serviceRoute);
+app.use("/service", serviceRoute);
 app.use("/reviews", reviewsRoute);
 //app.use("/products", productsRoute);
