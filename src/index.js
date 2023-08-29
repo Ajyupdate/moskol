@@ -5,7 +5,7 @@ const path = require("path");
 const mongoose = require("mongoose");
 
 const { getDb, connectToDb } = require("../src/database/db");
-const serviceRoute = require("./routes/services");
+//const serviceRoute = require("./routes/services");
 const reviewsRoute = require("./routes/reviews");
 //const productsRoute = require("./routes/products");
 const adminRoute = require("./routes/admin");
@@ -16,6 +16,8 @@ const PORT = 3001;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+
+app.use(express.static("public"));
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, "public")));
@@ -39,6 +41,6 @@ app.get("/info", (req, res) => {
 
 app.use("/client", clientRoute);
 app.use("/admin", adminRoute);
-app.use("/service", serviceRoute);
+//app.use("/service", serviceRoute);
 app.use("/reviews", reviewsRoute);
 //app.use("/products", productsRoute);
