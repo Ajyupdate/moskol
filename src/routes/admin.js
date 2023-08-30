@@ -90,7 +90,7 @@ router.post("/login", async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(serializeUser, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: "5m",
+      expiresIn: "10m",
     });
 
     // const user = {name: username}
