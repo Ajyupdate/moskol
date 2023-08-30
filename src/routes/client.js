@@ -48,6 +48,18 @@ router.post("/register", async (req, res) => {
   try {
     const { username, password, phoneNumber, occupation } = req.body;
 
+    if (username === "" || password === "" || occupation === "") {
+      return res
+        .status(400)
+        .json({ message: "One of the required field is missing" });
+    }
+
+    const existingClient = await Client.findOne({ username });
+
+    if (existingClient) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+
     // Hash the password before storing it in the database
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -88,7 +100,7 @@ router.post("/login", async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(serializeUser, process.env.CLIENT_TOKEN_SECRET, {
-      expiresIn: "2m",
+      expiresIn: "10m",
     });
 
     // const user = {name: username}
