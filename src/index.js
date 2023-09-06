@@ -11,6 +11,7 @@ const productsRoute = require("./routes/products");
 const adminRoute = require("./routes/admin");
 const clientRoute = require("./routes/client");
 const message = require("./routes/message");
+const todo = require("./routes/todo");
 
 const app = express();
 const PORT = 3001;
@@ -46,3 +47,4 @@ app.use("/service", serviceRoute);
 app.use("/reviews", reviewsRoute);
 app.use("/products", productsRoute);
 app.use("/message", message);
+app.use("/todos", todo);
