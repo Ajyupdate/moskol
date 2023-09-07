@@ -66,7 +66,7 @@ router.get("", (request, response) => {
 //   Date: String,
 // });
 
-// POST route to add a new review
+// POST route to add a new todo
 router.post("", (request, response) => {
   const { title, startTime, endTime, date, completed } = request.body;
 
@@ -163,6 +163,28 @@ router.patch("/:id", (request, response) => {
   } else {
     response.status(400).json({ error: "No fields to update" });
   }
+});
+
+router.delete("/:id", (request, response) => {
+  const todoId = request.params.id;
+
+  // Check if todoId is a valid ObjectId
+  if (!ObjectId.isValid(todoId)) {
+    return response.status(400).json({ error: "Invalid todo ID" });
+  }
+
+  db.collection("todos")
+    .deleteOne({ _id: new ObjectId(todoId) })
+    .then((result) => {
+      if (result.deletedCount === 1) {
+        response.json({ message: "Todo deleted successfully" });
+      } else {
+        response.status(404).json({ error: "Todo not found" });
+      }
+    })
+    .catch(() => {
+      response.status(500).json({ error: "Could not delete todo" });
+    });
 });
 
 module.exports = router;
