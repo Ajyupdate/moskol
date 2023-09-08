@@ -71,11 +71,49 @@ router.post("", (request, response) => {
   const { title, startTime, endTime, date, completed } = request.body;
 
   if (title && startTime && endTime) {
+    const originalDate = new Date(date);
+    const options = {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    };
+
+    const formattedDate = originalDate.toLocaleDateString("en-US", options);
+
+    // Create a new Date object for the current date
+    const currentDate = new Date();
+    let taskDate;
+    // Check if the formattedDate matches today's date
+    const currentFormattedDate = currentDate.toLocaleDateString(
+      "en-US",
+      options
+    );
+
+    const formattedYear = parseInt(formattedDate.substring(11, 16), 10);
+    const formattedMonth = formattedDate.substring(4, 8);
+    const formattedDay = parseInt(formattedDate.substring(8, 10), 10);
+
+    // Extract the date components from the current date
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentFormattedDate.substring(4, 8);
+    const currentDay = currentDate.getDate();
+
+    if (
+      formattedYear === currentYear &&
+      formattedMonth === currentMonth &&
+      formattedDay === currentDay
+    ) {
+      taskDate = "Today";
+    } else {
+      taskDate = formattedDate;
+    }
+
     const newTodo = {
       title,
       startTime,
       endTime,
-      date,
+      date: formattedDate,
       completed,
     };
 
@@ -102,12 +140,7 @@ router.patch("/:id", (request, response) => {
       weekday: "short",
       year: "numeric",
       month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      timeZoneName: "long",
-      timeZone: "Africa/Lagos", // West Africa Standard Time
+      day: "2-digit",
     };
 
     const formattedDate = originalDate.toLocaleDateString("en-US", options);
@@ -144,7 +177,7 @@ router.patch("/:id", (request, response) => {
       title,
       startTime,
       endTime,
-      date: taskDate,
+      date: formattedDate,
       completed,
     };
 
