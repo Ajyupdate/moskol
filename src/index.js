@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const mongoose = require("mongoose");
-
+app.use(cors({ origin: "https://moskol.vercel.app" }));
 const { getDb, connectToDb } = require("../src/database/db");
 const serviceRoute = require("./routes/services");
 const reviewsRoute = require("./routes/reviews");
