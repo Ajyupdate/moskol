@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const mongoose = require("mongoose");
-app.use(cors({ origin: "https://moskol.vercel.app" }));
+
 const { getDb, connectToDb } = require("../src/database/db");
 const serviceRoute = require("./routes/services");
 const reviewsRoute = require("./routes/reviews");
@@ -18,6 +18,7 @@ const PORT = 3001;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+app.use(cors({ origin: "https://moskol.vercel.app" }));
 
 app.use(express.static("public"));
 
