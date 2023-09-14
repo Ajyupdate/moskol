@@ -43,7 +43,6 @@ const reviewSchema = new mongoose.Schema({
 });
 
 router.get("", (request, response) => {
-  console.log(12);
   const requestedDate = request.query.date;
   let todos = [];
 
