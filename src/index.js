@@ -18,10 +18,15 @@ const PORT = 3001;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
-app.use(cors({ origin: "https://moskol.vercel.app" }));
-app.use(cors({ origin: "http://localhost:3000" }));
+const corsOptions = {
+  origin: "*",
+};
 
-app.use(cors({ origin: "https://schoolinka-task-delta.vercel.app/" }));
+app.use(cors(corsOptions));
+// app.use(cors({ origin: "https://moskol.vercel.app" }));
+// app.use(cors({ origin: "http://localhost:3000" }));
+
+// app.use(cors({ origin: "https://schoolinka-task-delta.vercel.app/" }));
 
 app.use(express.static("public"));
 
