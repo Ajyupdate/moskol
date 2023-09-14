@@ -21,6 +21,8 @@ app.use(cors());
 app.use(cors({ origin: "https://moskol.vercel.app" }));
 app.use(cors({ origin: "http://localhost:3000" }));
 
+app.use(cors({ origin: "https://schoolinka-task-delta.vercel.app/" }));
+
 app.use(express.static("public"));
 
 // Serve static files from the 'public' directory
