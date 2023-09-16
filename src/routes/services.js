@@ -35,7 +35,7 @@ const serviceSchema = new mongoose.Schema({
 const Service = mongoose.model("services", serviceSchema);
 
 router.get("", async (req, res) => {
-  const servicePerPage = req.query.p || 3;
+  const servicePerPage = req.query.p || 4;
   try {
     const services = await Service.find().limit(servicePerPage * 1);
     res.json(services);
