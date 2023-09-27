@@ -76,15 +76,16 @@ router.get("", async (req, res) => {
         Key: service.imageUrl,
       };
       const command = new GetObjectCommand(getObjectParams);
-      const url = await getSignedUrl(s3, command, { expiresIn: 10000 });
+      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
       service.imageUrl = url;
     }
 
     res.json(services);
   } catch (error) {
+    console.error("Error fetching image from S3:", error);
     res
       .status(500)
-      .json({ error: "An error occurred while fetching services" });
+      .json({ error: "An error occurred while fetching images from S3" });
   }
 });
 
