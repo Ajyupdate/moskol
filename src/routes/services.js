@@ -85,7 +85,9 @@ router.get("", async (req, res) => {
     console.error("Error fetching image from S3:", error);
     res
       .status(500)
-      .json({ error: "An error occurred while fetching images from S3" });
+      .json({
+        error: "An error occurred while fetching images from S3 bucket",
+      });
   }
 });
 
