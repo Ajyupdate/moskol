@@ -4,7 +4,6 @@ const crypto = require("crypto");
 
 const { mongoose } = require("mongoose");
 const { ObjectId } = require("mongodb");
-const sharp = require("sharp");
 
 const {
   PutObjectCommand,
