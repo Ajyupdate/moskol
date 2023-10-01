@@ -9,8 +9,28 @@ const fs = require("fs");
 //import * as fs from "node:fs";
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
+const {
+  PutObjectCommand,
+  S3Client,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 // const {getDb, connectToDb} = require('./database/')
+
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
+const accessKey = process.env.ACCESS_KEY;
+const secretAccessKey = process.env.SECRET_ACCESS_KEY;
+
+const s3 = new S3Client({
+  credentials: {
+    accessKeyId: accessKey,
+    secretAccessKey: secretAccessKey,
+  },
+  region: bucketRegion,
+});
 
 const router = Router();
 const db = mongoose.connection;
@@ -26,19 +46,35 @@ const oneProduct = new mongoose.Schema({
 
 const oneProductData = mongoose.model("products", oneProduct);
 
-router.get("", (request, response) => {
-  let products = [];
+router.get("", async (request, response) => {
+  try {
+    const products = await oneProductData.find();
 
-  db.collection("products")
-    .find()
-
-    .forEach((product) => products.push(product))
-    .then(() => {
-      response.status(200).json(products);
-    })
-    .catch(() => {
-      response.status(500).json({ error: "Could not fetch the products" });
+    for (const product of products) {
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: product.imageUrl,
+      };
+      const command = new GetObjectCommand(getObjectParams);
+      const url = await getSignedUrl(s3, command, { expiresIn: 36000 });
+      product.imageUrl = url;
+    }
+    response.json(products);
+  } catch (error) {
+    console.error("Error fetching image from S3:", error);
+    res.status(500).json({
+      error: "An error occurred while fetching images from S3 bucket",
     });
+  }
+  // oneProductData
+  //   .find()
+  //   .then((products) => {
+  //     response.status(200).json(products);
+  //   })
+  //   .catch((error) => {
+  //     console.error(error);
+  //     response.status(500).json({ error: "Could not fetch the products" });
+  //   });
 });
 
 router.use(express.static("public/uploads"));

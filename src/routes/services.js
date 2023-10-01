@@ -29,13 +29,7 @@ const s3 = new S3Client({
   region: bucketRegion,
 });
 
-const formidable = require("formidable");
-const fs = require("fs");
-//import * as fs from "node:fs";
-const path = require("path");
-const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
-const { Console } = require("console");
 
 const router = Router();
 const db = mongoose.connection;
@@ -76,18 +70,16 @@ router.get("", async (req, res) => {
         Key: service.imageUrl,
       };
       const command = new GetObjectCommand(getObjectParams);
-      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+      const url = await getSignedUrl(s3, command, { expiresIn: 36000 });
       service.imageUrl = url;
     }
 
     res.json(services);
   } catch (error) {
     console.error("Error fetching image from S3:", error);
-    res
-      .status(500)
-      .json({
-        error: "An error occurred while fetching images from S3 bucket",
-      });
+    res.status(500).json({
+      error: "An error occurred while fetching images from S3 bucket",
+    });
   }
 });
 
