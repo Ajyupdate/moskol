@@ -1,5 +1,5 @@
 const { Router, json } = require("express");
-
+const crypto = require("crypto");
 const { mongoose } = require("mongoose");
 const { ObjectId } = require("mongodb");
 const express = require("express");
@@ -16,6 +16,10 @@ const {
   DeleteObjectCommand,
 } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const multer = require("multer");
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // const {getDb, connectToDb} = require('./database/')
 
@@ -45,6 +49,8 @@ const oneProduct = new mongoose.Schema({
 });
 
 const oneProductData = mongoose.model("products", oneProduct);
+const randomImageName = (bytes = 16) =>
+  crypto.randomBytes(bytes).toString("hex");
 
 router.get("", async (request, response) => {
   try {
@@ -66,28 +72,28 @@ router.get("", async (request, response) => {
       error: "An error occurred while fetching images from S3 bucket",
     });
   }
-  // oneProductData
-  //   .find()
-  //   .then((products) => {
-  //     response.status(200).json(products);
-  //   })
-  //   .catch((error) => {
-  //     console.error(error);
-  //     response.status(500).json({ error: "Could not fetch the products" });
-  //   });
 });
 
 router.use(express.static("public/uploads"));
-router.get("/:id", (request, response) => {
+
+router.get("/:id", async (request, response) => {
   const { id } = request.params;
-  db.collection("products")
-    .findOne({ _id: new ObjectId(id) })
-    .then((doc) => {
-      response.status(200).json(doc);
-    })
-    .catch((err) => {
-      res.status(500).json({ error: "could not fetch document" });
-    });
+
+  try {
+    const product = await oneProductData.findOne({ _id: new ObjectId(id) });
+
+    const getObjectParams = {
+      Bucket: bucketName,
+      Key: product.imageUrl,
+    };
+    const command = new GetObjectCommand(getObjectParams);
+    const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+    product.imageUrl = url;
+    console.log(product);
+    response.json(product);
+  } catch (err) {
+    res.status(500).json({ error: "could not fetch document" });
+  }
 });
 
 // PATCH route for updating a product
@@ -113,64 +119,98 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-router.post("", async (req, res) => {
-  const form = new formidable.IncomingForm();
-  const uploadDir = path.join(__dirname, "public/uploads");
+router.post("", upload.single("image"), async (req, res) => {
+  const buffer = req.file.buffer;
 
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
+  const imageName = randomImageName();
+  const params = {
+    Bucket: bucketName,
+    Key: imageName,
+    Body: buffer,
+    ContentType: req.file.mimetype,
+  };
 
-  form.uploadDir = uploadDir;
-  form.keepExtensions = true;
+  const command = new PutObjectCommand(params);
+  await s3.send(command);
 
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      return res.status(500).json({ message: "Error parsing form data" });
-    }
-
-    // const image = files.image;
-    // const imagePath = image ? image.path : '';
-
-    const imagePath = files.imageUrl[0].filepath;
-    const imageName = uuidv4() + path.extname(imagePath);
-    const relativeImagePath = path.join("uploads", imageName);
-
-    const newPath = path.join(uploadDir, imageName);
-
-    //Use fs.rename to move the file instead of fs.renameSync
-    fs.rename(imagePath, newPath, (renameError) => {
-      if (renameError) {
-        console.error("Error renaming file:", renameError);
-        return res.status(500).json({ message: "Error saving uploaded image" });
-      }
-
-      const productData = new oneProductData({
-        imageUrl: relativeImagePath.replace("\\", "/"),
-        name: fields.name[0],
-        description: fields.description[0],
-        price: parseFloat(fields.price),
-        unitAvailable: parseInt(fields.unitAvailable, 10),
-        features: JSON.parse(fields.features),
-      });
-
-      productData
-        .save()
-        .then(() => {
-          console.log("Product saved successfully");
-          return res
-            .status(200)
-            .json({ message: "Product added successfully" });
-        })
-        .catch((saveError) => {
-          console.error("Error saving product:", saveError);
-          return res
-            .status(500)
-            .json({ message: "Error adding product to the database" });
-        });
-    });
+  const productData = new oneProductData({
+    imageUrl: imageName,
+    name: req.body.name,
+    description: req.body.description,
+    price: req.body.price,
+    features: JSON.parse(req.body.features),
+    unitAvailable: req.body.unitAvailable,
   });
+
+  productData
+    .save()
+    .then(() => {
+      console.log("Product saved successfully");
+      return res.status(200).json({ message: "Product added successfully" });
+    })
+    .catch((saveError) => {
+      console.error("Error saving product:", saveError);
+      return res
+        .status(500)
+        .json({ message: "Error adding product to the database" });
+    });
 });
+
+// router.post("", async (req, res) => {
+//   const form = new formidable.IncomingForm();
+//   const uploadDir = path.join(__dirname, "public/uploads");
+
+//   if (!fs.existsSync(uploadDir)) {
+//     fs.mkdirSync(uploadDir, { recursive: true });
+//   }
+
+//   form.uploadDir = uploadDir;
+//   form.keepExtensions = true;
+
+//   form.parse(req, async (err, fields, files) => {
+//     if (err) {
+//       return res.status(500).json({ message: "Error parsing form data" });
+//     }
+
+//     const imagePath = files.imageUrl[0].filepath;
+//     const imageName = uuidv4() + path.extname(imagePath);
+//     const relativeImagePath = path.join("uploads", imageName);
+
+//     const newPath = path.join(uploadDir, imageName);
+
+//     //Use fs.rename to move the file instead of fs.renameSync
+//     fs.rename(imagePath, newPath, (renameError) => {
+//       if (renameError) {
+//         console.error("Error renaming file:", renameError);
+//         return res.status(500).json({ message: "Error saving uploaded image" });
+//       }
+
+//       const productData = new oneProductData({
+//         imageUrl: relativeImagePath.replace("\\", "/"),
+//         name: fields.name[0],
+//         description: fields.description[0],
+//         price: parseFloat(fields.price),
+//         unitAvailable: parseInt(fields.unitAvailable, 10),
+//         features: JSON.parse(fields.features),
+//       });
+
+//       productData
+//         .save()
+//         .then(() => {
+//           console.log("Product saved successfully");
+//           return res
+//             .status(200)
+//             .json({ message: "Product added successfully" });
+//         })
+//         .catch((saveError) => {
+//           console.error("Error saving product:", saveError);
+//           return res
+//             .status(500)
+//             .json({ message: "Error adding product to the database" });
+//         });
+//     });
+//   });
+// });
 
 // DELETE route to delete a product by ID
 router.delete("/:id", async (req, res) => {

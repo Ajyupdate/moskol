@@ -85,17 +85,28 @@ router.get("", async (req, res) => {
 
 router.get("/:id", async (request, response) => {
   const { id } = request.params;
-  await Service.findOne({ _id: new ObjectId(id) })
-    .then((doc) => {
-      response.status(200).json(doc);
-    })
-    .catch((err) => {
-      res.status(500).json({ error: "could not fetch document" });
-    });
+
+  try {
+    const service = await Service.findOne({ _id: new ObjectId(id) });
+
+    const getObjectParams = {
+      Bucket: bucketName,
+      Key: service.imageUrl,
+    };
+    const command = new GetObjectCommand(getObjectParams);
+    const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+    service.imageUrl = url;
+    console.log(service);
+    response.json(service);
+  } catch (err) {
+    res.status(500).json({ error: "could not fetch document" });
+  }
 });
 
 router.post("", upload.single("image"), async (req, res) => {
   const buffer = req.file.buffer;
+  console.log(buffer);
+  console.log(req.body);
   // const buffer = await sharp(req.file.buffer)
   //   .resize({ height: 250, width: 250, fit: "contain" })
   //   .toBuffer();
@@ -123,14 +134,14 @@ router.post("", upload.single("image"), async (req, res) => {
   productData
     .save()
     .then(() => {
-      console.log("Product saved successfully");
-      return res.status(200).json({ message: "Product added successfully" });
+      console.log("Service saved successfully");
+      return res.status(200).json({ message: "Service added successfully" });
     })
     .catch((saveError) => {
-      console.error("Error saving product:", saveError);
+      console.error("Error saving Service:", saveError);
       return res
         .status(500)
-        .json({ message: "Error adding product to the database" });
+        .json({ message: "Error adding Service to the database" });
     });
 });
 router.delete("/:id", async (req, res) => {
