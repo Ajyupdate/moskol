@@ -34,11 +34,14 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 router.get("", async (req, res) => {
+  const key = req.query.key;
+
   const servicePerPage = req.query.p || 4;
   try {
     const getObjectParams = {
       Bucket: bucketName,
-      Key: "639d10204b29694ee7683203a6d88b01",
+      // Key: "639d10204b29694ee7683203a6d88b01",
+      Key: key,
     };
     const command = new GetObjectCommand(getObjectParams);
     const url = await getSignedUrl(s3, command, { expiresIn: 36000 });
@@ -52,73 +55,25 @@ router.get("", async (req, res) => {
   }
 });
 
-// router.get("/:id", async (request, response) => {
-//   const { id } = request.params;
-//   await Service.findOne({ _id: new ObjectId(id) })
-//     .then((doc) => {
-//       response.status(200).json(doc);
-//     })
-//     .catch((err) => {
-//       res.status(500).json({ error: "could not fetch document" });
-//     });
-// });
+router.get("/whoweare", async (req, res) => {
+  const key = req.query.key;
 
-// router.post("", upload.single("image"), async (req, res) => {
-//   const buffer = req.file.buffer;
-//   // const buffer = await sharp(req.file.buffer)
-//   //   .resize({ height: 250, width: 250, fit: "contain" })
-//   //   .toBuffer();
+  const servicePerPage = req.query.p || 4;
+  try {
+    const getObjectParams = {
+      Bucket: bucketName,
+      Key: "a72687c4cd0adcfaea44bde66ccdaea7",
+    };
+    const command = new GetObjectCommand(getObjectParams);
+    const url = await getSignedUrl(s3, command, { expiresIn: 36000 });
 
-//   const imageName = randomImageName();
-//   const params = {
-//     Bucket: bucketName,
-//     Key: imageName,
-//     Body: buffer,
-//     ContentType: req.file.mimetype,
-//   };
+    res.json(url);
+  } catch (error) {
+    console.error("Error fetching image from S3:", error);
+    res.status(500).json({
+      error: "An error occurred while fetching images from S3 bucket",
+    });
+  }
+});
 
-//   const command = new PutObjectCommand(params);
-//   await s3.send(command);
-
-//   const productData = new Service({
-//     imageUrl: imageName,
-//     title: req.body.title,
-//     description: req.body.description,
-
-//     features: JSON.parse(req.body.features),
-//     benefits: JSON.parse(req.body.benefits),
-//   });
-
-//   productData
-//     .save()
-//     .then(() => {
-//       console.log("Product saved successfully");
-//       return res.status(200).json({ message: "Product added successfully" });
-//     })
-//     .catch((saveError) => {
-//       console.error("Error saving product:", saveError);
-//       return res
-//         .status(500)
-//         .json({ message: "Error adding product to the database" });
-//     });
-// });
-// router.delete("/:id", async (req, res) => {
-//   const id = req.params.id;
-
-//   const service = await Service.findOne({ _id: new ObjectId(id) });
-//   if (!service) {
-//     res.status(404).send("Service not found");
-//     return;
-//   }
-//   const params = {
-//     Bucket: bucketName,
-//     Key: service.imageUrl,
-//   };
-
-//   const command = new DeleteObjectCommand(params);
-//   await s3.send(command);
-
-//   await service.deleteOne();
-//   res.send({});
-// });
 module.exports = router;

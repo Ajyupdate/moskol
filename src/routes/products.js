@@ -89,7 +89,7 @@ router.get("/:id", async (request, response) => {
     const command = new GetObjectCommand(getObjectParams);
     const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
     product.imageUrl = url;
-    console.log(product);
+   
     response.json(product);
   } catch (err) {
     res.status(500).json({ error: "could not fetch document" });
