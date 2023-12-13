@@ -96,7 +96,7 @@ router.get("/:id", async (request, response) => {
     const command = new GetObjectCommand(getObjectParams);
     const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
     service.imageUrl = url;
-    console.log(service);
+
     response.json(service);
   } catch (err) {
     res.status(500).json({ error: "could not fetch document" });
@@ -105,8 +105,7 @@ router.get("/:id", async (request, response) => {
 
 router.post("", upload.single("image"), async (req, res) => {
   const buffer = req.file.buffer;
-  console.log(buffer);
-  console.log(req.body);
+
   // const buffer = await sharp(req.file.buffer)
   //   .resize({ height: 250, width: 250, fit: "contain" })
   //   .toBuffer();
